@@ -55,3 +55,18 @@ model Activity {
   nextAction  String?
   createdAt   DateTime @default(now())
 }
+
+model SpesaOperativa {
+  id              Int       @id @default(autoincrement())
+  nome            String
+  categoria       String
+  importo         Float
+  valuta          String    @default("EUR")
+  frequenza       String
+  prossimoRinnovo DateTime?
+  rinnovoAuto     Boolean   @default(false)
+  note            String?
+  attivo          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}

@@ -12,11 +12,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-gray-50">
         <nav className="bg-white border-b border-gray-100 px-6 py-3.5">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 bg-gray-900 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-xs tracking-tight">W</span>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-gray-900 rounded flex items-center justify-center">
+                  <span className="text-white font-bold text-xs tracking-tight">W</span>
+                </div>
+                <span className="font-semibold text-gray-900 text-sm tracking-tight">Webora CRM</span>
               </div>
-              <span className="font-semibold text-gray-900 text-sm tracking-tight">Webora CRM</span>
+              <nav className="flex items-center gap-1">
+                <a href="/" className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors font-medium">Pipeline</a>
+                <a href="/spese" className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors font-medium">Spese</a>
+              </nav>
             </div>
             <span className="text-xs text-gray-400 tracking-widest uppercase font-medium">
               Webora Studio

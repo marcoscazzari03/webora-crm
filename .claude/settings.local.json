@@ -1,7 +1,40 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx prisma *)",
+      "Bash(npx --yes prisma init --datasource-provider sqlite)",
+      "Bash(npm install *)",
+      "Bash(npx --yes prisma generate)",
+      "Bash(npx --yes prisma migrate dev --name init)",
+      "Bash(npx --yes prisma db seed)",
+      "Bash(node -e \"const Database = require\\('better-sqlite3'\\); const { PrismaBetterSQLite3 } = require\\('@prisma/adapter-better-sqlite3'\\); const { PrismaClient } = require\\('@prisma/client'\\); const sqlite = new Database\\('./prisma/dev.db'\\); const adapter = new PrismaBetterSQLite3\\(sqlite\\); console.log\\('adapter ok'\\);\")",
+      "Bash(node -e \"const m = require\\('@prisma/adapter-better-sqlite3'\\); console.log\\(Object.keys\\(m\\)\\);\")",
+      "Bash(node prisma/seed.mjs)",
+      "Bash(node -e \"const m = require\\('@prisma/adapter-better-sqlite3'\\); const cls = m.PrismaBetterSqlite3; console.log\\(cls.toString\\(\\).slice\\(0, 500\\)\\);\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_in_Chrome__navigate",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(taskkill /PID 14920 /F)",
+      "PowerShell(Stop-Process -Id 14920 -Force)",
+      "Bash(npx --yes prisma migrate dev --name add_prospect_fields)",
+      "Bash(npx --yes prisma migrate dev --name add_attachments)",
+      "Bash(git config *)",
+      "Bash(git check-ignore *)",
+      "Bash(git branch *)",
+      "Bash(gh repo *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(npx --yes prisma migrate dev --name add_spese_operative)",
+      "Bash(mkdir \"C:\\\\Users\\\\marco\\\\OneDrive\\\\Desktop\\\\webora-crm\\\\app\\\\api\\\\spese\" && mkdir \"C:\\\\Users\\\\marco\\\\OneDrive\\\\Desktop\\\\webora-crm\\\\app\\\\api\\\\spese\\\\[id]\" && mkdir \"C:\\\\Users\\\\marco\\\\OneDrive\\\\Desktop\\\\webora-crm\\\\app\\\\spese\")",
+      "Bash(npx ts-node *)",
+      "Bash(npx tsx *)",
+      "Bash(curl -s http://localhost:3000/api/spese)"
     ]
   }
 }

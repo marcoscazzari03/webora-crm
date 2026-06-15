@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import path from "path";
 
-const prisma = new PrismaClient({
-  datasourceUrl: "file:./prisma/dev.db",
-});
+const adapter = new PrismaBetterSqlite3({ url: `file:${path.join(process.cwd(), "prisma", "dev.db")}` });
+const prisma = new PrismaClient({ adapter });
 
 const prospects = [
   {
@@ -84,12 +85,71 @@ const prospects = [
   },
 ];
 
+const spese = [
+  {
+    nome: "Hostinger Business",
+    categoria: "Hosting",
+    importo: 11.99,
+    valuta: "EUR",
+    frequenza: "MENSILE",
+    prossimoRinnovo: new Date("2026-07-01"),
+    rinnovoAuto: true,
+    note: "Piano business, include 100 siti",
+  },
+  {
+    nome: "Claude Pro",
+    categoria: "AI",
+    importo: 18.0,
+    valuta: "USD",
+    frequenza: "MENSILE",
+    prossimoRinnovo: new Date("2026-07-05"),
+    rinnovoAuto: true,
+    note: "Anthropic Claude Pro",
+  },
+  {
+    nome: "ChatGPT Plus",
+    categoria: "AI",
+    importo: 20.0,
+    valuta: "USD",
+    frequenza: "MENSILE",
+    prossimoRinnovo: new Date("2026-07-10"),
+    rinnovoAuto: true,
+    note: "OpenAI GPT-4o",
+  },
+  {
+    nome: "weborastudio.it",
+    categoria: "Dominio",
+    importo: 14.99,
+    valuta: "EUR",
+    frequenza: "ANNUALE",
+    prossimoRinnovo: new Date("2027-01-15"),
+    rinnovoAuto: false,
+    note: "Dominio principale Webora Studio",
+  },
+  {
+    nome: "Contabo VPS S",
+    categoria: "VPS",
+    importo: 4.99,
+    valuta: "EUR",
+    frequenza: "MENSILE",
+    prossimoRinnovo: new Date("2026-06-20"),
+    rinnovoAuto: true,
+    note: "VPS per progetti clienti in staging",
+  },
+];
+
 async function main() {
   await prisma.prospect.deleteMany();
   for (const p of prospects) {
     await prisma.prospect.create({ data: p });
   }
   console.log(`Seeded ${prospects.length} prospects`);
+
+  await prisma.spesaOperativa.deleteMany();
+  for (const s of spese) {
+    await prisma.spesaOperativa.create({ data: s });
+  }
+  console.log(`Seeded ${spese.length} spese operative`);
 }
 
 main()
