@@ -28,6 +28,7 @@ model Prospect {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   attachments     Attachment[]
+  activities      Activity[]
 }
 
 model Attachment {
@@ -41,4 +42,16 @@ model Attachment {
   size         Int
   category     String   @default("ALTRO")
   createdAt    DateTime @default(now())
+}
+
+model Activity {
+  id          Int      @id @default(autoincrement())
+  prospectId  Int
+  prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  type        String
+  date        DateTime @default(now())
+  summary     String
+  outcome     String?
+  nextAction  String?
+  createdAt   DateTime @default(now())
 }

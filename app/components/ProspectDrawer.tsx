@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Prospect } from "@prisma/client";
 import ProspectForm from "./ProspectForm";
 import AttachmentsSection from "./AttachmentsSection";
+import ActivityLog from "./ActivityLog";
 import {
   PIPELINE_STAGES,
   POTENTIAL_STYLES,
@@ -261,6 +262,9 @@ export default function ProspectDrawer({ prospect, mode, onClose, onSaved, onDel
                   </div>
                 </dl>
               </section>
+
+              {/* Attività */}
+              <ActivityLog prospectId={prospect.id} />
 
               {/* Materiali */}
               <AttachmentsSection prospectId={prospect.id} />
