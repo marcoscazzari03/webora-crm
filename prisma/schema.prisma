@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Prospect {
+  id           Int      @id @default(autoincrement())
+  businessName String
+  ownerName    String?
+  category     String
+  city         String
+  phone        String?
+  email        String?
+  website      String?
+  instagram    String?
+  status       String   @default("DA_CONTATTARE")
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
