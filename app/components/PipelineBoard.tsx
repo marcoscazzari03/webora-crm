@@ -144,7 +144,7 @@ export default function PipelineBoard({ initialProspects }: Props) {
 
   const hasActiveFilter = search !== "" || filterCategory !== "" || filterPotential !== "" || filterCity !== "";
 
-  const { scaduti, followUpOggi, nuovi, senzaFollowUp } = useMemo(() => {
+  const { scaduti, followUpOggi, daContattare, senzaFollowUp } = useMemo(() => {
     const oggi = new Date(new Date().setHours(0, 0, 0, 0));
     const domani = new Date(oggi.getTime() + 86400000);
     return {
@@ -156,8 +156,9 @@ export default function PipelineBoard({ initialProspects }: Props) {
         const d = new Date(p.nextFollowUp);
         return d >= oggi && d < domani;
       }),
-      nuovi: [...prospects]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      daContattare: prospects
+        .filter((p) => p.status === "DA_CONTATTARE")
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
         .slice(0, 5),
       senzaFollowUp: prospects
         .filter((p) => !p.nextFollowUp && p.status !== "DA_CONTATTARE")
@@ -172,6 +173,15 @@ export default function PipelineBoard({ initialProspects }: Props) {
       filteredProspects.filter((p) => p.status === s.key),
     ])
   );
+
+  function giorniFa(data: Date | string): string {
+    const diff = Math.floor(
+      (new Date(new Date().setHours(0, 0, 0, 0)).getTime() - new Date(data).getTime()) / 86400000
+    );
+    if (diff === 0) return "scaduto oggi";
+    if (diff === 1) return "scaduto ieri";
+    return `scaduto ${diff} giorni fa`;
+  }
 
   function handleSaved(saved: Prospect) {
     setProspects((prev) => {
@@ -270,82 +280,115 @@ export default function PipelineBoard({ initialProspects }: Props) {
         <h2 className="text-sm font-semibold text-gray-500 mb-3">📋 Bacheca</h2>
         <div className="grid grid-cols-4 gap-4">
           {/* Scaduti */}
-          <div className="rounded-lg border border-red-200 flex flex-col">
-            <div className="rounded-t-lg border-b border-red-200 px-3 py-2 flex items-center justify-between bg-red-50">
-              <span className="text-xs font-bold uppercase tracking-widest text-red-700">Scaduti</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">{scaduti.length}</span>
+          {scaduti.length === 0 ? (
+            <div className="rounded-lg border border-red-200 opacity-40">
+              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-red-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-red-700">Scaduti</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">0</span>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-              {scaduti.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">Nessun arretrato 🎉</p>
-              ) : scaduti.map((p) => (
-                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                  <div className="text-xs text-orange-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
-                </button>
-              ))}
+          ) : (
+            <div className="rounded-lg border border-red-200 flex flex-col">
+              <div className="rounded-t-lg border-b border-red-200 px-3 py-2 flex items-center justify-between bg-red-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-red-700">Scaduti</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">{scaduti.length}</span>
+              </div>
+              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+                {scaduti.map((p) => (
+                  <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                    className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                    <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                    <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                    <div className="text-xs text-red-500 font-medium mt-0.5">⚠ {giorniFa(p.nextFollowUp!)}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Oggi */}
-          <div className="rounded-lg border border-orange-200 flex flex-col">
-            <div className="rounded-t-lg border-b border-orange-200 px-3 py-2 flex items-center justify-between bg-orange-50">
-              <span className="text-xs font-bold uppercase tracking-widest text-orange-700">Oggi</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">{followUpOggi.length}</span>
+          {followUpOggi.length === 0 ? (
+            <div className="rounded-lg border border-orange-200 opacity-40">
+              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-orange-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-orange-700">Oggi</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">0</span>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-              {followUpOggi.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">Nessun follow-up oggi</p>
-              ) : followUpOggi.map((p) => (
-                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                  <div className="text-xs text-orange-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
-                </button>
-              ))}
+          ) : (
+            <div className="rounded-lg border border-orange-200 flex flex-col">
+              <div className="rounded-t-lg border-b border-orange-200 px-3 py-2 flex items-center justify-between bg-orange-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-orange-700">Oggi</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">{followUpOggi.length}</span>
+              </div>
+              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+                {followUpOggi.map((p) => (
+                  <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                    className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                    <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                    <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                    <div className="text-xs text-orange-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Nuovi */}
-          <div className="rounded-lg border border-blue-200 flex flex-col">
-            <div className="rounded-t-lg border-b border-blue-200 px-3 py-2 flex items-center justify-between bg-blue-50">
-              <span className="text-xs font-bold uppercase tracking-widest text-blue-700">Ultimi aggiunti</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{nuovi.length}</span>
+          {/* Da contattare */}
+          {daContattare.length === 0 ? (
+            <div className="rounded-lg border border-blue-200 opacity-40">
+              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-blue-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-blue-700">Da contattare</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">0</span>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-              {nuovi.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">Nessun prospect</p>
-              ) : nuovi.map((p) => (
-                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                </button>
-              ))}
+          ) : (
+            <div className="rounded-lg border border-blue-200 flex flex-col">
+              <div className="rounded-t-lg border-b border-blue-200 px-3 py-2 flex items-center justify-between bg-blue-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-blue-700">Da contattare</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{daContattare.length}</span>
+              </div>
+              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+                {daContattare.map((p) => {
+                  const oggi = new Date(new Date().setHours(0, 0, 0, 0));
+                  const giorni = Math.max(0, Math.floor((oggi.getTime() - new Date(p.createdAt).getTime()) / 86400000));
+                  return (
+                    <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                      className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                      <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                      <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                      <div className="text-xs text-blue-400 mt-0.5">In lista da {giorni} giorni</div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Senza follow-up */}
-          <div className="rounded-lg border border-gray-200 flex flex-col">
-            <div className="rounded-t-lg border-b border-gray-200 px-3 py-2 flex items-center justify-between bg-gray-50">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Senza follow-up</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{senzaFollowUp.length}</span>
+          {senzaFollowUp.length === 0 ? (
+            <div className="rounded-lg border border-gray-200 opacity-40">
+              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-gray-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Senza follow-up</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">0</span>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-              {senzaFollowUp.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">Tutti hanno un follow-up</p>
-              ) : senzaFollowUp.map((p) => (
-                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                </button>
-              ))}
+          ) : (
+            <div className="rounded-lg border border-gray-200 flex flex-col">
+              <div className="rounded-t-lg border-b border-gray-200 px-3 py-2 flex items-center justify-between bg-gray-50">
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Senza follow-up</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{senzaFollowUp.length}</span>
+              </div>
+              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+                {senzaFollowUp.map((p) => (
+                  <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                    className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                    <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                    <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
