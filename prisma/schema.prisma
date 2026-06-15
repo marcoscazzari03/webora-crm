@@ -7,17 +7,38 @@ datasource db {
 }
 
 model Prospect {
+  id              Int          @id @default(autoincrement())
+  businessName    String
+  ownerName       String?
+  category        String
+  city            String
+  phone           String?
+  email           String?
+  website         String?
+  instagram       String?
+  status          String       @default("DA_CONTATTARE")
+  potential       String       @default("MEDIO")
+  websiteStatus   String       @default("ASSENTE")
+  socialStatus    String       @default("SCARSO")
+  issues          String?
+  opportunities   String?
+  notes           String?
+  lastContact     DateTime?
+  nextFollowUp    DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  attachments     Attachment[]
+}
+
+model Attachment {
   id           Int      @id @default(autoincrement())
-  businessName String
-  ownerName    String?
-  category     String
-  city         String
-  phone        String?
-  email        String?
-  website      String?
-  instagram    String?
-  status       String   @default("DA_CONTATTARE")
-  notes        String?
+  prospectId   Int
+  prospect     Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  filename     String
+  originalName String
+  storagePath  String
+  mimeType     String
+  size         Int
+  category     String   @default("ALTRO")
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 }

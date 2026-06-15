@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -45,3 +46,10 @@ next-env.d.ts
 # SQLite database
 prisma/*.db
 prisma/*.db-journal
+
+# Uploaded files (keep directory, ignore contents)
+/uploads/*
+!/uploads/.gitkeep
+
+# Claude Code local settings
+.claude/settings.local.json

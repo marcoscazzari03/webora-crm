@@ -42,3 +42,27 @@ export const PIPELINE_STAGES = [
 ] as const;
 
 export type StageKey = (typeof PIPELINE_STAGES)[number]["key"];
+
+export const POTENTIAL_OPTIONS = [
+  { value: "ALTO", label: "Alto" },
+  { value: "MEDIO", label: "Medio" },
+  { value: "BASSO", label: "Basso" },
+] as const;
+
+export const WEBSITE_STATUS_OPTIONS = [
+  { value: "ASSENTE", label: "Assente" },
+  { value: "OBSOLETO", label: "Obsoleto" },
+  { value: "BUONO", label: "Buono" },
+] as const;
+
+export const SOCIAL_STATUS_OPTIONS = [
+  { value: "SCARSO", label: "Scarso" },
+  { value: "MEDIO", label: "Medio" },
+  { value: "BUONO", label: "Buono" },
+] as const;
+
+export const POTENTIAL_STYLES: Record<string, string> = {
+  ALTO: "bg-green-100 text-green-700",
+  MEDIO: "bg-yellow-100 text-yellow-700",
+  BASSO: "bg-red-100 text-red-700",
+};
