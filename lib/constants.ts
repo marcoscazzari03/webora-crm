@@ -2,7 +2,7 @@ export const PIPELINE_STAGES = [
   {
     key: "DA_CONTATTARE",
     label: "Da contattare",
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-gray-100 text-gray-600",
     dot: "bg-gray-400",
     border: "border-gray-200",
     header: "bg-gray-50",
@@ -10,34 +10,34 @@ export const PIPELINE_STAGES = [
   {
     key: "CONTATTATO",
     label: "Contattato",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-blue-50 text-blue-600",
     dot: "bg-blue-400",
-    border: "border-blue-200",
-    header: "bg-blue-50",
+    border: "border-blue-100",
+    header: "bg-blue-50/60",
   },
   {
     key: "HA_RISPOSTO",
     label: "Ha risposto",
-    color: "bg-yellow-100 text-yellow-700",
-    dot: "bg-yellow-400",
-    border: "border-yellow-200",
-    header: "bg-yellow-50",
+    color: "bg-amber-50 text-amber-600",
+    dot: "bg-amber-400",
+    border: "border-amber-100",
+    header: "bg-amber-50/60",
   },
   {
     key: "MOCKUP_INVIATO",
     label: "Mockup inviato",
-    color: "bg-purple-100 text-purple-700",
-    dot: "bg-purple-400",
-    border: "border-purple-200",
-    header: "bg-purple-50",
+    color: "bg-violet-50 text-violet-600",
+    dot: "bg-violet-400",
+    border: "border-violet-100",
+    header: "bg-violet-50/60",
   },
   {
     key: "PREVENTIVO",
     label: "PDF / Call / Preventivo",
-    color: "bg-green-100 text-green-700",
-    dot: "bg-green-500",
-    border: "border-green-200",
-    header: "bg-green-50",
+    color: "bg-emerald-50 text-emerald-600",
+    dot: "bg-emerald-400",
+    border: "border-emerald-100",
+    header: "bg-emerald-50/60",
   },
 ] as const;
 
@@ -62,7 +62,7 @@ export const SOCIAL_STATUS_OPTIONS = [
 ] as const;
 
 export const POTENTIAL_STYLES: Record<string, string> = {
-  ALTO: "bg-green-100 text-green-700",
-  MEDIO: "bg-yellow-100 text-yellow-700",
-  BASSO: "bg-red-100 text-red-700",
+  ALTO: "bg-emerald-50 text-emerald-700",
+  MEDIO: "bg-amber-50 text-amber-700",
+  BASSO: "bg-red-50 text-red-600",
 };

@@ -14,49 +14,31 @@ type DrawerState =
   | { mode: "create"; prospect: null }
   | null;
 
-function ProspectCard({
-  prospect,
-  onClick,
-}: {
-  prospect: Prospect;
-  onClick: () => void;
-}) {
+function ProspectCard({ prospect, onClick }: { prospect: Prospect; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white rounded-lg border border-gray-200 p-3.5 shadow-sm hover:shadow-md hover:border-gray-300 transition-all"
+      className="w-full text-left bg-white rounded-lg border border-gray-100 p-3 hover:border-gray-300 hover:shadow-sm transition-all duration-150"
     >
-      <div className="font-semibold text-gray-900 text-sm mb-0.5 truncate">
+      <div className="font-medium text-gray-900 text-sm truncate leading-snug">
         {prospect.businessName}
       </div>
       {prospect.ownerName && (
-        <div className="text-xs text-gray-400 mb-2">{prospect.ownerName}</div>
+        <div className="text-xs text-gray-400 mt-0.5 truncate">{prospect.ownerName}</div>
       )}
-      <div className="flex items-center gap-1.5 flex-wrap mb-2">
-        <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">
+      <div className="flex items-center gap-2 mt-2">
+        <span className="text-xs bg-gray-50 text-gray-500 border border-gray-100 rounded px-1.5 py-0.5 truncate max-w-[90px]">
           {prospect.category}
         </span>
-        <span className="text-xs text-gray-400">{prospect.city}</span>
+        <span className="text-xs text-gray-400 truncate">{prospect.city}</span>
       </div>
-      <div className="flex items-center justify-between">
-        <span
-          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-            POTENTIAL_STYLES[prospect.potential] ?? "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {prospect.potential === "ALTO"
-            ? "Alto"
-            : prospect.potential === "MEDIO"
-            ? "Medio"
-            : "Basso"}
+      <div className="flex items-center justify-between mt-2">
+        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${POTENTIAL_STYLES[prospect.potential] ?? "bg-gray-50 text-gray-500"}`}>
+          {prospect.potential === "ALTO" ? "Alto" : prospect.potential === "MEDIO" ? "Medio" : "Basso"}
         </span>
         {prospect.nextFollowUp && (
-          <span className="text-xs text-orange-500">
-            ↻{" "}
-            {new Date(prospect.nextFollowUp).toLocaleDateString("it-IT", {
-              day: "2-digit",
-              month: "2-digit",
-            })}
+          <span className="text-xs text-amber-500 font-medium">
+            ↻ {new Date(prospect.nextFollowUp).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit" })}
           </span>
         )}
       </div>
@@ -74,30 +56,22 @@ function PipelineColumn({
   onCardClick: (p: Prospect) => void;
 }) {
   return (
-    <div
-      className={`flex flex-col rounded-xl border ${stage.border} min-w-0`}
-    >
-      <div
-        className={`${stage.header} rounded-t-xl px-4 py-3 border-b ${stage.border}`}
-      >
+    <div className={`flex flex-col rounded-xl border ${stage.border} bg-white overflow-hidden`}>
+      <div className={`${stage.header} px-4 py-3 border-b ${stage.border}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${stage.dot}`} />
-            <span className="text-sm font-semibold text-gray-700 truncate">
-              {stage.label}
-            </span>
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${stage.dot}`} />
+            <span className="text-xs font-semibold text-gray-700 truncate">{stage.label}</span>
           </div>
-          <span
-            className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${stage.color}`}
-          >
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${stage.color}`}>
             {prospects.length}
           </span>
         </div>
       </div>
-      <div className="flex-1 p-3 flex flex-col gap-2 min-h-[180px]">
+      <div className="flex-1 p-2.5 flex flex-col gap-1.5 min-h-[160px] bg-gray-50/40">
         {prospects.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <span className="text-xs text-gray-300">Nessun prospect</span>
+            <span className="text-xs text-gray-300">Vuoto</span>
           </div>
         ) : (
           prospects.map((p) => (
@@ -108,6 +82,9 @@ function PipelineColumn({
     </div>
   );
 }
+
+const inp = "w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors";
+const sel = "bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors";
 
 export default function PipelineBoard({ initialProspects }: Props) {
   const [prospects, setProspects] = useState<Prospect[]>(initialProspects);
@@ -129,11 +106,7 @@ export default function PipelineBoard({ initialProspects }: Props) {
   const filteredProspects = useMemo(() => {
     const q = search.toLowerCase();
     return prospects.filter((p) => {
-      if (
-        q &&
-        ![p.businessName, p.ownerName ?? "", p.city, p.category]
-          .some((f) => f.toLowerCase().includes(q))
-      )
+      if (q && ![p.businessName, p.ownerName ?? "", p.city, p.category].some((f) => f.toLowerCase().includes(q)))
         return false;
       if (filterCategory && p.category !== filterCategory) return false;
       if (filterPotential && p.potential !== filterPotential) return false;
@@ -168,10 +141,7 @@ export default function PipelineBoard({ initialProspects }: Props) {
   }, [prospects]);
 
   const byStage = Object.fromEntries(
-    PIPELINE_STAGES.map((s) => [
-      s.key,
-      filteredProspects.filter((p) => p.status === s.key),
-    ])
+    PIPELINE_STAGES.map((s) => [s.key, filteredProspects.filter((p) => p.status === s.key)])
   );
 
   function giorniFa(data: Date | string): string {
@@ -180,15 +150,13 @@ export default function PipelineBoard({ initialProspects }: Props) {
     );
     if (diff === 0) return "scaduto oggi";
     if (diff === 1) return "scaduto ieri";
-    return `scaduto ${diff} giorni fa`;
+    return `scaduto ${diff} gg fa`;
   }
 
   function handleSaved(saved: Prospect) {
     setProspects((prev) => {
       const exists = prev.find((p) => p.id === saved.id);
-      return exists
-        ? prev.map((p) => (p.id === saved.id ? saved : p))
-        : [saved, ...prev];
+      return exists ? prev.map((p) => (p.id === saved.id ? saved : p)) : [saved, ...prev];
     });
     setDrawer(null);
   }
@@ -198,15 +166,71 @@ export default function PipelineBoard({ initialProspects }: Props) {
     setDrawer(null);
   }
 
+  function BachecaCol({
+    title,
+    items,
+    borderCls,
+    headerCls,
+    titleCls,
+    badgeCls,
+    emptyText,
+    renderCard,
+  }: {
+    title: string;
+    items: Prospect[];
+    borderCls: string;
+    headerCls: string;
+    titleCls: string;
+    badgeCls: string;
+    emptyText: string;
+    renderCard: (p: Prospect) => React.ReactNode;
+  }) {
+    if (items.length === 0) {
+      return (
+        <div className={`rounded-lg border ${borderCls} opacity-40`}>
+          <div className={`rounded-lg px-3 py-2 flex items-center justify-between ${headerCls}`}>
+            <span className={`text-xs font-semibold uppercase tracking-widest ${titleCls}`}>{title}</span>
+            <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${badgeCls}`}>0</span>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className={`rounded-lg border ${borderCls} flex flex-col overflow-hidden`}>
+        <div className={`px-3 py-2 flex items-center justify-between border-b ${borderCls} ${headerCls}`}>
+          <span className={`text-xs font-semibold uppercase tracking-widest ${titleCls}`}>{title}</span>
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${badgeCls}`}>{items.length}</span>
+        </div>
+        <div className="flex flex-col gap-1 p-1.5 max-h-44 overflow-y-auto bg-white">
+          {items.map((p) => (
+            <div key={p.id}>{renderCard(p)}</div>
+          ))}
+        </div>
+        {emptyText && items.length === 0 && (
+          <p className="text-xs text-gray-400 text-center py-4">{emptyText}</p>
+        )}
+      </div>
+    );
+  }
+
+  const bcCard = (p: Prospect, extra?: React.ReactNode) => (
+    <button
+      onClick={() => setDrawer({ mode: "view", prospect: p })}
+      className="w-full text-left px-2.5 py-2 rounded-md hover:bg-gray-50 transition-colors"
+    >
+      <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+      <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+      {extra}
+    </button>
+  );
+
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Pipeline Prospect
-          </h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Pipeline</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
             {hasActiveFilter
               ? `${filteredProspects.length} di ${prospects.length} prospect`
               : `${prospects.length} prospect totali`}
@@ -214,205 +238,113 @@ export default function PipelineBoard({ initialProspects }: Props) {
         </div>
         <button
           onClick={() => setDrawer({ mode: "create", prospect: null })}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
         >
-          <span className="text-lg leading-none">+</span>
+          <span className="text-base leading-none">+</span>
           Nuovo prospect
         </button>
       </div>
 
       {/* Filtri */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-2 mb-6">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cerca prospect..."
-          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+          className={`flex-1 ${inp}`}
         />
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
-        >
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={sel}>
           <option value="">Tutte le categorie</option>
-          {uniqueCategories.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
+          {uniqueCategories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select
-          value={filterPotential}
-          onChange={(e) => setFilterPotential(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
-        >
+        <select value={filterPotential} onChange={(e) => setFilterPotential(e.target.value)} className={sel}>
           <option value="">Tutti</option>
-          {POTENTIAL_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
+          {POTENTIAL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <select
-          value={filterCity}
-          onChange={(e) => setFilterCity(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
-        >
+        <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className={sel}>
           <option value="">Tutte le città</option>
-          {uniqueCities.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
+          {uniqueCities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         {hasActiveFilter && (
           <button
-            onClick={() => {
-              setSearch("");
-              setFilterCategory("");
-              setFilterPotential("");
-              setFilterCity("");
-            }}
-            className="text-sm text-gray-400 hover:text-gray-700 whitespace-nowrap transition-colors"
+            onClick={() => { setSearch(""); setFilterCategory(""); setFilterPotential(""); setFilterCity(""); }}
+            className="text-xs text-gray-400 hover:text-gray-600 whitespace-nowrap transition-colors px-1"
           >
-            Azzera filtri
+            Azzera
           </button>
         )}
       </div>
 
       {/* Bacheca */}
-      <div className="mb-6">
-        <h2 className="text-sm font-semibold text-gray-500 mb-3">📋 Bacheca</h2>
-        <div className="grid grid-cols-4 gap-4">
-          {/* Scaduti */}
-          {scaduti.length === 0 ? (
-            <div className="rounded-lg border border-red-200 opacity-40">
-              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-red-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-red-700">Scaduti</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">0</span>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-red-200 flex flex-col">
-              <div className="rounded-t-lg border-b border-red-200 px-3 py-2 flex items-center justify-between bg-red-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-red-700">Scaduti</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">{scaduti.length}</span>
-              </div>
-              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-                {scaduti.map((p) => (
-                  <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                    className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                    <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                    <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                    <div className="text-xs text-red-500 font-medium mt-0.5">⚠ {giorniFa(p.nextFollowUp!)}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Oggi */}
-          {followUpOggi.length === 0 ? (
-            <div className="rounded-lg border border-orange-200 opacity-40">
-              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-orange-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-orange-700">Oggi</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">0</span>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-orange-200 flex flex-col">
-              <div className="rounded-t-lg border-b border-orange-200 px-3 py-2 flex items-center justify-between bg-orange-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-orange-700">Oggi</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">{followUpOggi.length}</span>
-              </div>
-              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-                {followUpOggi.map((p) => (
-                  <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                    className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                    <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                    <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                    <div className="text-xs text-orange-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Da contattare */}
-          {daContattare.length === 0 ? (
-            <div className="rounded-lg border border-blue-200 opacity-40">
-              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-blue-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-blue-700">Da contattare</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">0</span>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-blue-200 flex flex-col">
-              <div className="rounded-t-lg border-b border-blue-200 px-3 py-2 flex items-center justify-between bg-blue-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-blue-700">Da contattare</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{daContattare.length}</span>
-              </div>
-              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-                {daContattare.map((p) => {
-                  const oggi = new Date(new Date().setHours(0, 0, 0, 0));
-                  const giorni = Math.max(0, Math.floor((oggi.getTime() - new Date(p.createdAt).getTime()) / 86400000));
-                  return (
-                    <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                      className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                      <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                      <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                      <div className="text-xs text-blue-400 mt-0.5">In lista da {giorni} giorni</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Senza follow-up */}
-          {senzaFollowUp.length === 0 ? (
-            <div className="rounded-lg border border-gray-200 opacity-40">
-              <div className="rounded-lg px-3 py-2 flex items-center justify-between bg-gray-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Senza follow-up</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">0</span>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-gray-200 flex flex-col">
-              <div className="rounded-t-lg border-b border-gray-200 px-3 py-2 flex items-center justify-between bg-gray-50">
-                <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Senza follow-up</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{senzaFollowUp.length}</span>
-              </div>
-              <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
-                {senzaFollowUp.map((p) => (
-                  <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
-                    className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
-                    <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
-                    <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="mb-8">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Bacheca</p>
+        <div className="grid grid-cols-4 gap-3">
+          <BachecaCol
+            title="Scaduti"
+            items={scaduti}
+            borderCls="border-red-100"
+            headerCls="bg-red-50"
+            titleCls="text-red-500"
+            badgeCls="bg-red-100 text-red-600"
+            emptyText=""
+            renderCard={(p) => bcCard(p,
+              <div className="text-xs text-red-500 font-medium mt-0.5">⚠ {giorniFa(p.nextFollowUp!)}</div>
+            )}
+          />
+          <BachecaCol
+            title="Oggi"
+            items={followUpOggi}
+            borderCls="border-amber-100"
+            headerCls="bg-amber-50"
+            titleCls="text-amber-600"
+            badgeCls="bg-amber-100 text-amber-700"
+            emptyText=""
+            renderCard={(p) => bcCard(p,
+              <div className="text-xs text-amber-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
+            )}
+          />
+          <BachecaCol
+            title="Da contattare"
+            items={daContattare}
+            borderCls="border-blue-100"
+            headerCls="bg-blue-50"
+            titleCls="text-blue-600"
+            badgeCls="bg-blue-100 text-blue-700"
+            emptyText=""
+            renderCard={(p) => {
+              const oggi = new Date(new Date().setHours(0, 0, 0, 0));
+              const giorni = Math.max(0, Math.floor((oggi.getTime() - new Date(p.createdAt).getTime()) / 86400000));
+              return bcCard(p, <div className="text-xs text-blue-400 mt-0.5">In lista da {giorni} gg</div>);
+            }}
+          />
+          <BachecaCol
+            title="Senza follow-up"
+            items={senzaFollowUp}
+            borderCls="border-gray-200"
+            headerCls="bg-gray-50"
+            titleCls="text-gray-500"
+            badgeCls="bg-gray-100 text-gray-600"
+            emptyText=""
+            renderCard={(p) => bcCard(p)}
+          />
         </div>
       </div>
 
-      <div className="border-t border-gray-100 my-6" />
-
-      {/* Stats */}
-      <div className="grid grid-cols-5 gap-3 mb-8">
+      {/* Stats pipeline */}
+      <div className="grid grid-cols-5 gap-2.5 mb-6">
         {PIPELINE_STAGES.map((stage) => (
-          <div
-            key={stage.key}
-            className={`rounded-lg border ${stage.border} ${stage.header} px-4 py-3`}
-          >
-            <div className="text-2xl font-bold text-gray-800">
+          <div key={stage.key} className={`rounded-lg border ${stage.border} bg-white px-4 py-3`}>
+            <div className="text-2xl font-bold text-gray-900 leading-none">
               {byStage[stage.key]?.length ?? 0}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5 leading-tight">
-              {stage.label}
-            </div>
+            <div className="text-xs text-gray-400 mt-1 leading-tight">{stage.label}</div>
           </div>
         ))}
       </div>
 
       {/* Kanban */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-5 gap-3">
         {PIPELINE_STAGES.map((stage) => (
           <PipelineColumn
             key={stage.key}
@@ -423,7 +355,6 @@ export default function PipelineBoard({ initialProspects }: Props) {
         ))}
       </div>
 
-      {/* Drawer */}
       {drawer && (
         <ProspectDrawer
           prospect={drawer.prospect}
@@ -431,10 +362,7 @@ export default function PipelineBoard({ initialProspects }: Props) {
           onClose={() => setDrawer(null)}
           onSaved={handleSaved}
           onDeleted={handleDeleted}
-          onEdit={() =>
-            drawer.prospect &&
-            setDrawer({ mode: "edit", prospect: drawer.prospect })
-          }
+          onEdit={() => drawer.prospect && setDrawer({ mode: "edit", prospect: drawer.prospect })}
         />
       )}
     </>
