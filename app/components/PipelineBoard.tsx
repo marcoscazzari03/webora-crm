@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Prospect } from "@prisma/client";
-import { PIPELINE_STAGES, POTENTIAL_STYLES } from "@/lib/constants";
+import { PIPELINE_STAGES, POTENTIAL_OPTIONS, POTENTIAL_STYLES } from "@/lib/constants";
 import ProspectDrawer from "./ProspectDrawer";
 
 interface Props {
@@ -112,11 +112,64 @@ function PipelineColumn({
 export default function PipelineBoard({ initialProspects }: Props) {
   const [prospects, setProspects] = useState<Prospect[]>(initialProspects);
   const [drawer, setDrawer] = useState<DrawerState>(null);
+  const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterPotential, setFilterPotential] = useState("");
+  const [filterCity, setFilterCity] = useState("");
+
+  const uniqueCategories = useMemo(
+    () => [...new Set(prospects.map((p) => p.category).filter(Boolean))].sort(),
+    [prospects]
+  );
+  const uniqueCities = useMemo(
+    () => [...new Set(prospects.map((p) => p.city).filter(Boolean))].sort(),
+    [prospects]
+  );
+
+  const filteredProspects = useMemo(() => {
+    const q = search.toLowerCase();
+    return prospects.filter((p) => {
+      if (
+        q &&
+        ![p.businessName, p.ownerName ?? "", p.city, p.category]
+          .some((f) => f.toLowerCase().includes(q))
+      )
+        return false;
+      if (filterCategory && p.category !== filterCategory) return false;
+      if (filterPotential && p.potential !== filterPotential) return false;
+      if (filterCity && p.city !== filterCity) return false;
+      return true;
+    });
+  }, [prospects, search, filterCategory, filterPotential, filterCity]);
+
+  const hasActiveFilter = search !== "" || filterCategory !== "" || filterPotential !== "" || filterCity !== "";
+
+  const { scaduti, followUpOggi, nuovi, senzaFollowUp } = useMemo(() => {
+    const oggi = new Date(new Date().setHours(0, 0, 0, 0));
+    const domani = new Date(oggi.getTime() + 86400000);
+    return {
+      scaduti: prospects
+        .filter((p) => p.nextFollowUp && new Date(p.nextFollowUp) < oggi)
+        .sort((a, b) => new Date(a.nextFollowUp!).getTime() - new Date(b.nextFollowUp!).getTime()),
+      followUpOggi: prospects.filter((p) => {
+        if (!p.nextFollowUp) return false;
+        const d = new Date(p.nextFollowUp);
+        return d >= oggi && d < domani;
+      }),
+      nuovi: [...prospects]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5),
+      senzaFollowUp: prospects
+        .filter((p) => !p.nextFollowUp && p.status !== "DA_CONTATTARE")
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5),
+    };
+  }, [prospects]);
 
   const byStage = Object.fromEntries(
     PIPELINE_STAGES.map((s) => [
       s.key,
-      prospects.filter((p) => p.status === s.key),
+      filteredProspects.filter((p) => p.status === s.key),
     ])
   );
 
@@ -144,7 +197,9 @@ export default function PipelineBoard({ initialProspects }: Props) {
             Pipeline Prospect
           </h1>
           <p className="text-gray-500 text-sm">
-            {prospects.length} prospect totali
+            {hasActiveFilter
+              ? `${filteredProspects.length} di ${prospects.length} prospect`
+              : `${prospects.length} prospect totali`}
           </p>
         </div>
         <button
@@ -155,6 +210,146 @@ export default function PipelineBoard({ initialProspects }: Props) {
           Nuovo prospect
         </button>
       </div>
+
+      {/* Filtri */}
+      <div className="flex items-center gap-3 mb-6">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cerca prospect..."
+          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+        >
+          <option value="">Tutte le categorie</option>
+          {uniqueCategories.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          value={filterPotential}
+          onChange={(e) => setFilterPotential(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+        >
+          <option value="">Tutti</option>
+          {POTENTIAL_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select
+          value={filterCity}
+          onChange={(e) => setFilterCity(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+        >
+          <option value="">Tutte le città</option>
+          {uniqueCities.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        {hasActiveFilter && (
+          <button
+            onClick={() => {
+              setSearch("");
+              setFilterCategory("");
+              setFilterPotential("");
+              setFilterCity("");
+            }}
+            className="text-sm text-gray-400 hover:text-gray-700 whitespace-nowrap transition-colors"
+          >
+            Azzera filtri
+          </button>
+        )}
+      </div>
+
+      {/* Bacheca */}
+      <div className="mb-6">
+        <h2 className="text-sm font-semibold text-gray-500 mb-3">📋 Bacheca</h2>
+        <div className="grid grid-cols-4 gap-4">
+          {/* Scaduti */}
+          <div className="rounded-lg border border-red-200 flex flex-col">
+            <div className="rounded-t-lg border-b border-red-200 px-3 py-2 flex items-center justify-between bg-red-50">
+              <span className="text-xs font-bold uppercase tracking-widest text-red-700">Scaduti</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">{scaduti.length}</span>
+            </div>
+            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+              {scaduti.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">Nessun arretrato 🎉</p>
+              ) : scaduti.map((p) => (
+                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                  <div className="text-xs text-orange-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Oggi */}
+          <div className="rounded-lg border border-orange-200 flex flex-col">
+            <div className="rounded-t-lg border-b border-orange-200 px-3 py-2 flex items-center justify-between bg-orange-50">
+              <span className="text-xs font-bold uppercase tracking-widest text-orange-700">Oggi</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">{followUpOggi.length}</span>
+            </div>
+            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+              {followUpOggi.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">Nessun follow-up oggi</p>
+              ) : followUpOggi.map((p) => (
+                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                  <div className="text-xs text-orange-500 mt-0.5">↻ {new Date(p.nextFollowUp!).toLocaleDateString("it-IT")}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Nuovi */}
+          <div className="rounded-lg border border-blue-200 flex flex-col">
+            <div className="rounded-t-lg border-b border-blue-200 px-3 py-2 flex items-center justify-between bg-blue-50">
+              <span className="text-xs font-bold uppercase tracking-widest text-blue-700">Ultimi aggiunti</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{nuovi.length}</span>
+            </div>
+            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+              {nuovi.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">Nessun prospect</p>
+              ) : nuovi.map((p) => (
+                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Senza follow-up */}
+          <div className="rounded-lg border border-gray-200 flex flex-col">
+            <div className="rounded-t-lg border-b border-gray-200 px-3 py-2 flex items-center justify-between bg-gray-50">
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Senza follow-up</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{senzaFollowUp.length}</span>
+            </div>
+            <div className="flex flex-col gap-1.5 p-2 max-h-48 overflow-y-auto">
+              {senzaFollowUp.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">Tutti hanno un follow-up</p>
+              ) : senzaFollowUp.map((p) => (
+                <button key={p.id} onClick={() => setDrawer({ mode: "view", prospect: p })}
+                  className="w-full text-left px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-white bg-gray-50 transition-all">
+                  <div className="font-medium text-sm text-gray-900 truncate">{p.businessName}</div>
+                  <div className="text-xs text-gray-400 truncate">{p.city} · {p.category}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 my-6" />
 
       {/* Stats */}
       <div className="grid grid-cols-5 gap-3 mb-8">
